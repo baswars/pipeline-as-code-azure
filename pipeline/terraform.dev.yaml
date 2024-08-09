@@ -1,0 +1,64 @@
+trigger:
+  branches:
+    include:
+    - master
+    exclude:
+    - feature
+  batch: True
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    name: Default
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+    displayName: Install Terraform latest
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+    displayName: 'Terraform : Init'
+    inputs:
+      workingDirectory: $(System.DefaultWorkingDirectory)/env/dev
+      backendAzureRmUseEnvironmentVariablesForAuthentication: false
+      backendAzureRmUseEntraIdForAuthentication: false
+      backendServiceArm: 292a566e-a023-4ec1-9d74-51ffba940e3f
+      backendAzureRmResourceGroupName: rg-devops
+      backendAzureRmStorageAccountName: storageaccountdevops
+      backendAzureRmContainerName: container-devops
+      backendAzureRmKey: terraform.dev.tfstate
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+    displayName: 'Terraform : plan'
+    inputs:
+      command: plan
+      workingDirectory: $(System.DefaultWorkingDirectory)/env/dev
+      environmentServiceNameAzureRM: 292a566e-a023-4ec1-9d74-51ffba940e3f
+      backendAzureRmUseEnvironmentVariablesForAuthentication: false
+      backendAzureRmUseEntraIdForAuthentication: false
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+    displayName: 'Terraform : Validate'
+    inputs:
+      command: validate
+      workingDirectory: $(System.DefaultWorkingDirectory)/env/dev
+      backendAzureRmUseEnvironmentVariablesForAuthentication: false
+      backendAzureRmUseEntraIdForAuthentication: false
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+    displayName: 'Terraform : apply'
+    inputs:
+      command: apply
+      workingDirectory: $(System.DefaultWorkingDirectory)/env/dev
+      environmentServiceNameAzureRM: 292a566e-a023-4ec1-9d74-51ffba940e3f
+      backendAzureRmUseEnvironmentVariablesForAuthentication: false
+      backendAzureRmUseEntraIdForAuthentication: false
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+    displayName: 'Terraform : show'
+    inputs:
+      command: show
+      workingDirectory: $(System.DefaultWorkingDirectory)/env/dev
+      outputTo: file
+      outputFormat: json
+      fileName: azure-landing-dev
+      environmentServiceNameAzureRM: 292a566e-a023-4ec1-9d74-51ffba940e3f
+      backendAzureRmUseEnvironmentVariablesForAuthentication: false
+      backendAzureRmUseEntraIdForAuthentication: false
+...
